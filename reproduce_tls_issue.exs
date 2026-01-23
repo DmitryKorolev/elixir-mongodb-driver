@@ -19,9 +19,13 @@ defmodule ReproduceTlsIssue do
     IO.puts("\n--- Test 1: Connecting with default SSL options ---")
     connect(uri)
 
-    # 2. Attempt connection forcing TLS 1.2 (should succeed if cluster supports TLS 1.2)
-    IO.puts("\n--- Test 2: Connecting forcing TLS 1.2 ---")
-    connect(uri, ssl_opts: [versions: [:"tlsv1.2"]])
+    # 2. Attempt connection specifying TLS 1.2 ciphers but not setting TLS 1.2 explicitly
+    IO.puts("\n--- Test 2: Connecting with TLS 1.2 ciphers (no version restriction) ---")
+    # Using a cipher that is valid for TLS 1.2.
+    # If the server supports TLS 1.3, the handshake might fail if we don't restrict the version
+    # because the client might attempt TLS 1.3 but we haven't provided TLS 1.3 ciphers.
+    ciphers = ['AES256-GCM-SHA384']
+    connect(uri, ssl_opts: [ciphers: ciphers])
   end
 
   def connect(uri, extra_opts \\ []) do
