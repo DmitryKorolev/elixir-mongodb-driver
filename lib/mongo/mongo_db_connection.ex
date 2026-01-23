@@ -168,12 +168,26 @@ defmodule Mongo.MongoDBConnection do
     # Do not set SNI for IP addresses
     ssl_opts =
       case :inet.parse_address(host) do
-        {:ok, _} -> opts[:ssl_opts]
-        _ -> Keyword.put_new(opts[:ssl_opts] || [], :server_name_indication, host)
+        {:ok, _} ->
+          opts[:ssl_opts]
+
+        _ ->
+          ssl_opts = opts[:ssl_opts] || []
+          # Ensure SNI is a charlist for consistent session cache keys
+          sni = Keyword.get(ssl_opts, :server_name_indication, host)
+          sni = if is_binary(sni), do: to_charlist(sni), else: sni
+          Keyword.put(ssl_opts, :server_name_indication, sni)
       end
 
     case :ssl.connect(socket, ssl_opts, state.connect_timeout) do
       {:ok, ssl_sock} ->
+        if Logger.level() == :debug do
+          case :ssl.connection_information(ssl_sock, [:session_id, :protocol, :selected_cipher_suite]) do
+            {:ok, info} -> Logger.debug("SSL Connected: #{inspect(info)}")
+            _ -> :ok
+          end
+        end
+
         {:ok, %{state | connection: {:ssl, ssl_sock}}}
 
       {:error, reason} ->
