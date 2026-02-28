@@ -61,7 +61,9 @@ defmodule Mongo.Compressor do
 
   if @zstd_module do
     def uncompress(binary, @zstd_compressor_id) do
-      @zstd_module.decompress(binary)
+      binary
+      |> @zstd_module.decompress()
+      |> IO.iodata_to_binary()
     end
   end
 
