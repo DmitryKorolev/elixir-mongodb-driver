@@ -448,7 +448,7 @@ defmodule Mongo.Session do
     %Session{data | state: new_state}
   end
 
-  defp handle_call_result({:next_state, new_state,  %Session{} = data, result}, _old_data, from) do
+  defp handle_call_result({:next_state, new_state, %Session{} = data, result}, _old_data, from) do
     send(from, {:session_result, result})
     %Session{data | state: new_state}
   end
