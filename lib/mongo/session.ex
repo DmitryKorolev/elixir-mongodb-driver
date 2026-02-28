@@ -443,12 +443,12 @@ defmodule Mongo.Session do
     session
   end
 
-  defp handle_call_result({:next_state, new_state, result}, data, from) do
+  defp handle_call_result({:next_state, new_state, result}, %Session{} = data, from) do
     send(from, {:session_result, result})
     %Session{data | state: new_state}
   end
 
-  defp handle_call_result({:next_state, new_state, data, result}, _old_data, from) do
+  defp handle_call_result({:next_state, new_state,  %Session{} = data, result}, _old_data, from) do
     send(from, {:session_result, result})
     %Session{data | state: new_state}
   end
