@@ -142,7 +142,7 @@ defmodule BSON.Encoder do
                 {encode(value), type(value)}
 
               _ ->
-                new_value = value |> Mongo.Encoder.encode()
+                new_value = Mongo.Encoder.encode(value)
                 {encode(new_value), type(new_value)}
             end
 
